@@ -1,47 +1,46 @@
-import tcod as libtcod
+import tcod
 
-from keys_handler import handle_keys
+from actions import EscapeAction, MovementAction
+from input_handlers import EventHandler
 
-def main():
+def main() -> None:
     screen_width = 80
     screen_height = 50
 
     player_x = int(screen_width / 2)
     player_y = int(screen_height / 2)
 
-    libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+    tileset = tcod.tileset.load_tilesheet(
+        "arial10x10.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+    )
 
-    libtcod.console_init_root(screen_width, screen_height, 'libtcod tutorial revised', False)
+    event_handler = EventHandler()
 
-    con = libtcod.console_new(screen_width, screen_height)
+    with tcod.context.new_terminal(
+        screen_width,
+        screen_height,
+        tileset = tileset,
+        title = "RG tutorial",
+        vsync = True
+    ) as context:
+        root_console = tcod.Console(screen_width, screen_height, order = "F")
+        while True:
+            root_console.print(x = player_x, y = player_y, string = "@")
 
-    key = libtcod.Key()
-    mouse = libtcod.Mouse()
+            context.present(root_console)
 
-    while not libtcod.console_is_window_closed():
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
+            root_console.clear()
 
-        libtcod.console_set_default_foreground(con, libtcod.white)
-        libtcod.console_put_char(con, player_x, player_y, '@', libtcod.BKGND_NONE)
-        libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
+            for event in tcod.event.wait():
+                action = event_handler.dispatch(event)
+                if action is None:
+                    continue
+                if isinstance(action, MovementAction):
+                    player_x += action.dx
+                    player_y += action.dy
+                elif isinstance(action, EscapeAction):
+                    raise SystemExit()
 
-        libtcod.console_flush()
-
-        libtcod.console_put_char(con, player_x, player_y, ' ', libtcod.BKGND_NONE)
-
-        action = handle_keys(key)
-        move = action.get('move')
-        exit = action.get('exit')
-        fullscreen = action.get('fullscreen')
-        if move:
-            dx, dy = move
-            player_x += dx
-            player_y += dy
-
-        if exit:
-            return True
-        if fullscreen:
-            libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
 if __name__ == '__main__':
     main()
