@@ -33,8 +33,8 @@ MOVE_KEYS = {
     tcod.event.K_a: (-1, 0),
     tcod.event.K_d: (1, 0),
     tcod.event.K_q: (-1, -1),
-    tcod.event.K_e: (-1, 1),
-    tcod.event.K_z: (1, -1),
+    tcod.event.K_e: (1, -1),
+    tcod.event.K_z: (-1, 1),
     tcod.event.K_c: (1, 1),
 }
 
